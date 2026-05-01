@@ -1,10 +1,8 @@
 package Utar_Smart_Campus_Facility_Booking_and_Maintenance_Management_System;
 
 import java.util.*;
-import java.sql.*;	
-import java.time.*;
 
-public class Main_Menu {
+public class Main_Menu{
 
     public static void main(String[] args) {
     	
@@ -80,9 +78,8 @@ if (user != null) {
 
         System.out.print("Password: ");
         String password = sc.nextLine();
-
-        System.out.print("Role (student/admin/staff): ");
-        String role = sc.nextLine();
+        
+        String role = "student";
         
         System.out.print("Contact No: ");
         String contactNo = sc.nextLine();
@@ -140,19 +137,18 @@ public static void studentMenu(Scanner sc, User user, BookingService bookingServ
             }
             break;
             case 2:
-                System.out.print("Booking ID(B000): ");
-                String bid = sc.nextLine();
+                
 
                 System.out.print("Facility ID(F000): ");
                 String fid = sc.nextLine();
-
                 System.out.print("Purpose: ");
                 String purpose = sc.nextLine();
                 System.out.print("Time Slot (yyyy-mm-dd hh:mm): ");
                 String time = sc.nextLine();
-                System.out.println(bookingService.bookFacility(bid,user.getUserID(),fid,time,purpose));
+                System.out.println(bookingService.bookFacility(user.getUserID(), fid, time, purpose));
                 break;
-
+                
+                
             case 3:
 
                 System.out.println("1. Modify Booking");
@@ -197,10 +193,8 @@ public static void studentMenu(Scanner sc, User user, BookingService bookingServ
             case 6:
             	bookingService.sendReminder(user.getUserID());
                 break;
+                
             case 7:
-                System.out.print("Report ID (M000): ");
-                String rid = sc.nextLine();
-
                 System.out.print("Facility ID: ");
                 String fid1 = sc.nextLine();
 
@@ -210,12 +204,11 @@ public static void studentMenu(Scanner sc, User user, BookingService bookingServ
                 System.out.print("Image Path (optional): ");
                 String img = sc.nextLine();
 
-                MaintenanceReport m= new MaintenanceReport(rid, fid1, desc, img, "Pending");
+                MaintenanceReport m = new MaintenanceReport(null, fid1, desc, img, "Pending");
 
                 MaintenanceService ms = new MaintenanceService();
 
                 System.out.println(ms.submitReport(m));
-
                 break;
             case 8:
             	System.out.print("Enter Report ID: ");
