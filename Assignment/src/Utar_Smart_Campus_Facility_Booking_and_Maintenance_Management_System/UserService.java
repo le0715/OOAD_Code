@@ -3,29 +3,34 @@ package Utar_Smart_Campus_Facility_Booking_and_Maintenance_Management_System;
 import java.sql.*;
 import java.util.*;
 
-public class UserService {
+public class UserService{
     //UM01
-	public String registerUser(User user) {
-        String sql = "INSERT INTO users (user_id, name, email, password, role, contact_no) VALUES (?, ?, ?, ?, ?, ?)";
+	public String registerUser(User u) {
 
-        try (Connection connection = DataBase.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(sql)) {
+	    String sql = "INSERT INTO users (user_id, name, email, password, role, contact_no) VALUES (?, ?, ?, ?, ?, ?)";
 
-            stmt.setString(1, user.getUserID());
-            stmt.setString(2, user.getName());
-            stmt.setString(3, user.getEmail());
-            stmt.setString(4, user.getPassword());
-            stmt.setString(5, user.getRole());
-            stmt.setString(6, user.getContactNo());
+	    try (Connection conn = DataBase.getConnection();
+	         PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.executeUpdate();
-            return "Account created successfully";
+	        
+	        String userID = generateUserID();
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Error creating account";
-        }
-    }
+	        stmt.setString(1, userID);
+	        stmt.setString(2, u.getName());
+	        stmt.setString(3, u.getEmail());
+	        stmt.setString(4, u.getPassword());
+	        stmt.setString(5, "student");
+	        stmt.setString(6, u.getContactNo());
+
+	        stmt.executeUpdate();
+
+	        return "Registration successful! Your ID: " + userID;
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return "Registration failed!";
+	    }
+	}
     //UM02
     public boolean login(String email, String password) {
         String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
@@ -119,4 +124,28 @@ public User loginUser(String email, String password) {
 
     return null;
   }
+
+
+public String generateUserID() {
+
+	String sql = "SELECT user_id FROM users ORDER BY CAST(SUBSTR(user_id,2) AS INTEGER) DESC LIMIT 1";
+
+    try (Connection conn = DataBase.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql);
+         ResultSet rs = stmt.executeQuery()) {
+
+        if (rs.next()) {
+            String lastID = rs.getString("user_id"); 
+
+            int num = Integer.parseInt(lastID.substring(1));
+            num++;
+
+            return String.format("U%03d", num); 
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return "U001";
+	}
 }
