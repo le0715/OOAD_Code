@@ -38,39 +38,34 @@ public class BookingService {
 	        return list;
 	    }
 //FB02
-	    public String bookFacility(String bookingID, String userID, String facilityID, String timeSlot, String purpose) {
+	    	public String bookFacility(String userID, String facilityID, String time, String purpose) {
 
-	        String checkSql = "SELECT facility_id FROM facility WHERE facility_id = ?";
-	        String insertSql = "INSERT INTO booking VALUES (?, ?, ?, ?, ?, ?)";
+	        String sql = "INSERT INTO booking (booking_id, user_id, facility_id, time_slot, purpose, status) VALUES (?, ?, ?, ?, ?, ?)";
 
-	        try (Connection conn = DataBase.getConnection()) {
+	        try (Connection conn = DataBase.getConnection();
+	             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-	            //CHECK FACILITY EXISTS
-	            PreparedStatement checkStmt = conn.prepareStatement(checkSql);
-	            checkStmt.setString(1, facilityID);
-	            ResultSet rs = checkStmt.executeQuery();
-
-	            if (!rs.next()) {
-	                return "Facility not found!";
-	            }
-
-	            //INSERT BOOKING
-	            PreparedStatement stmt = conn.prepareStatement(insertSql);
+	            
+	            String bookingID = generateBookingID();
 
 	            stmt.setString(1, bookingID);
 	            stmt.setString(2, userID);
 	            stmt.setString(3, facilityID);
-	            stmt.setString(4, timeSlot);
+	            stmt.setString(4, time);
 	            stmt.setString(5, purpose);
 	            stmt.setString(6, "Pending");
 
-	            stmt.executeUpdate();
+	            int rows = stmt.executeUpdate();
 
-	            return "Booking Successful (Pending Approval)";
+	            if (rows > 0) {
+	                return "Booking Successful! ID: " + bookingID;
+	            } else {
+	                return "Booking failed!";
+	            }
 
 	        } catch (Exception e) {
 	            e.printStackTrace();
-	            return "Booking Failed";
+	            return "Error during booking!";
 	        }
 	    }
 //FB03
@@ -198,5 +193,29 @@ public class BookingService {
 	            System.err.println("Error processing reminders: " + e.getMessage());
 	            e.printStackTrace();
 	        }
-	    }
-}	    
+	    }    
+
+public String generateBookingID() {
+
+    String sql = "SELECT booking_id FROM booking ORDER BY CAST(SUBSTR(booking_id,2) AS INTEGER) DESC LIMIT 1";
+
+    try (Connection conn = DataBase.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql);
+         ResultSet rs = stmt.executeQuery()) {
+
+        if (rs.next()) {
+            String lastID = rs.getString("booking_id");
+            if (lastID != null && lastID.length() > 1) {
+                int num = Integer.parseInt(lastID.substring(1)); 
+                num++;
+                return String.format("B%03d", num);
+            }
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return "B001"; 
+	}
+}
