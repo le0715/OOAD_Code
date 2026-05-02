@@ -6,96 +6,81 @@ import java.util.*;
 public class UserService{
     //UM01
 	public String registerUser(User u) {
-
-	    String sql = "INSERT INTO users (user_id, name, email, password, role, contact_no) VALUES (?, ?, ?, ?, ?, ?)";
-
-	    try (Connection conn = DataBase.getConnection();
-	         PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-	        
-	        String userID = generateUserID();
-
-	        stmt.setString(1, userID);
-	        stmt.setString(2, u.getName());
-	        stmt.setString(3, u.getEmail());
-	        stmt.setString(4, u.getPassword());
-	        stmt.setString(5, "student");
-	        stmt.setString(6, u.getContactNo());
-
-	        stmt.executeUpdate();
-
-	        return "Registration successful! Your ID: " + userID;
-
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        return "Registration failed!";
-	    }
-	}
-    //UM02
-    public boolean login(String email, String password) {
-        String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
-
-        try (Connection conn = DataBase.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, email);
-            stmt.setString(2, password);
-
-            ResultSet rs = stmt.executeQuery();
-
-            return rs.next();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+	  if (u.getEmail() == null || !u.getEmail().toLowerCase().endsWith("@1utar.my")) {
+        return "Registration failed! Invalid email domain. Use @1utar.my";
     }
+	   try (FileWriter fw = new FileWriter("users.txt", true)) {
+
+        String id = generateUserID();
+
+        fw.write(id + "," +
+                 u.getName() + "," +
+                 u.getEmail() + "," +
+                 u.getPassword() + "," +
+                 "student," +
+                 u.getContactNo() + "\n");
+
+        return "Registered! ID: " + id;
+
+    } catch (Exception e) {
+        return "Error!";
+    }
+}
+    //UM02
+public User loginUser(String email, String password) {
+
+    try (BufferedReader br = new BufferedReader(new FileReader("users.txt"))) {
+
+        String line;
+
+        while ((line = br.readLine()) != null) {
+            String[] d = line.split(",");
+
+            if (d[2].equals(email) && d[3].equals(password)) {
+                User u = new User();
+                u.setUserID(d[0]);
+                u.setName(d[1]);
+                u.setRole(d[4]);
+                return u;
+            }
+        }
+
+    } catch (Exception e) {}
+
+    return null;
+}
     //UM03
 
-    public void updateProfile(User user) {
+public void updateProfile(User user, String name, String email, String pass, String contact) {
 
-        Scanner sc = new Scanner(System.in);
+    try {
+        File input = new File("users.txt");
+        File temp = new File("temp.txt");
 
-        System.out.println("\n===== UPDATE PROFILE =====");
+        BufferedReader br = new BufferedReader(new FileReader(input));
+        FileWriter fw = new FileWriter(temp);
 
-        System.out.print("New Name: ");
-        String name = sc.nextLine();
+        String line;
 
-        System.out.print("New Email: ");
-        String email = sc.nextLine();
+        while ((line = br.readLine()) != null) {
 
-        System.out.print("New Password: ");
-        String password = sc.nextLine();
+            String[] d = line.split(",");
 
-        System.out.print("New Contact No: ");
-        String contact = sc.nextLine();
-
-        String sql = "UPDATE users SET name=?, email=?, password=?, contact_no=? WHERE user_id=?";
-
-        try (Connection conn = DataBase.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, name);
-            stmt.setString(2, email);
-            stmt.setString(3, password);
-            stmt.setString(4, contact);
-            stmt.setString(5, user.getUserID());
-
-            stmt.executeUpdate();
-
-            // update current session object
-            user.setName(name);
-            user.setEmail(email);
-            user.setPassword(password);
-            user.setContactNo(contact);
-
-            System.out.println("Profile updated successfully!");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Update failed!");
+            if (d[0].equals(user.getUserID())) {
+                fw.write(d[0] + "," + name + "," + email + "," + pass + "," + d[4] + "," + contact + "\n");
+            } else {
+                fw.write(line + "\n");
+            }
         }
-    }
+
+        br.close();
+        fw.close();
+
+        input.delete();
+        temp.renameTo(input);
+
+    } catch (Exception e) {}
+}
 
 public User loginUser(String email, String password) {
 
