@@ -164,7 +164,7 @@ public class InsertTestData {
             stmt.setString(1, "M002");
             stmt.setString(2, "F002");
             stmt.setString(3, "Broken chair");
-            stmt.setString(4, ""); 
+            stmt.setString(4, null); 
             stmt.setString(5, "In Progress");
             stmt.setString(6, null);
             stmt.executeUpdate();
