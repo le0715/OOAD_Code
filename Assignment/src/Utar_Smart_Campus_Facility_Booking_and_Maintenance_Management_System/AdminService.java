@@ -16,7 +16,7 @@ public class AdminService {
 	        int rows = stmt.executeUpdate();
 	        
 	        if (rows > 0){
-	        return "Booking " + status + "successfully!";
+	        return "Booking " + status + " successfully!";
 	        }else {
 	        	return "Booking not found OR already processed.";
 	        }
